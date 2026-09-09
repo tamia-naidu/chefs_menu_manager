@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import {Picker} from '@react-native-picker/picker'; //To use the Picker component for selecting the course type
 
 type MenuItem = {
   id: string;
@@ -59,6 +59,9 @@ export default function App() {
   <View style={styles.container}>
 
       {screen === 'menu' ? (
+
+        /* ================= MENU SCREEN ================= */
+
       <>
         <View style={styles.header}>
           <Text style={styles.title}>Restaurant Menu</Text>
@@ -146,6 +149,9 @@ export default function App() {
 
       </>
     ) : screen === 'add' ? (
+
+      /* ================= ADD MENU SCREEN ================= */
+
       <View style={styles.content}>
 
         <Text style={styles.formTitle}>Add Menu Item</Text>
@@ -216,6 +222,9 @@ export default function App() {
 
       </View>
     ) : (
+
+      /* ================= SUCCESS SCREEN ================= */
+
   <View style={styles.content}>
     <Text style={styles.successTitle}>✓</Text>
 
@@ -263,6 +272,10 @@ export default function App() {
   </View>
 );
 }
+
+/* =====================================================
+   STYLES
+===================================================== */
 
 const styles = StyleSheet.create({
   container: {
