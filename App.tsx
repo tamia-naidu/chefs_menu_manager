@@ -10,6 +10,33 @@ type MenuItem = {
   price: string;
 };
 
+const initialMenuItems: MenuItem[] = [
+  {
+    id: '1',
+    dishName: 'Smoked Chicken Pasta',
+    description:
+      'Grilled smoked chicken with Penne pasta, cooked in a creamy sauce with basil',
+    course: 'Main Course',
+    price: '150.00',
+  },
+  {
+    id: '2',
+    dishName: 'Classic Garden Salad',
+    description:
+      'Mixed greens with tomatoes, cucumbers, carrots, red onions, and croutons',
+    course: 'Starter',
+    price: '70.00',
+  },
+  {
+    id: '3',
+    dishName: 'Chocolate Cake',
+    description:
+      'A rich slice of a moist chocolate cake, drizzled with chocolate ganache',
+    course: 'Dessert',
+    price: '55.00',
+  },
+];
+
 export default function App() {
   const [screen, setScreen] = useState('menu');
   const [dishName, setDishName] = useState('');
@@ -17,7 +44,7 @@ export default function App() {
   const [price, setPrice] = useState('');
   const [course, setCourse] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
   const [lastAddedItem, setLastAddedItem] = useState<MenuItem | null>(null);
 
   const handleSave = () => {
