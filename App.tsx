@@ -47,6 +47,55 @@ export default function App() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
   const [lastAddedItem, setLastAddedItem] = useState<MenuItem | null>(null);
 
+  // Calculates the total number of menu items.
+const totalItems = menuItems.length;
+
+// Calculates the overall average price.
+const averagePrice =
+  totalItems === 0
+    ? 0
+    : menuItems.reduce(
+        (total, item) => total + Number(item.price),
+        0
+      ) / totalItems;
+
+// Counts the number of starters.
+const starterCount = menuItems.filter(
+  item => item.course === 'Starter'
+).length;
+
+// Counts the number of main courses.
+const mainCourseCount = menuItems.filter(
+  item => item.course === 'Main Course'
+).length;
+
+// Counts the number of desserts.
+const dessertCount = menuItems.filter(
+  item => item.course === 'Dessert'
+).length;
+
+// Calculates the average price for each course.
+const calculateCourseAverage = (selectedCourse: string) => {
+  const courseItems = menuItems.filter(
+    item => item.course === selectedCourse
+  );
+
+  if (courseItems.length === 0) {
+    return 0;
+  }
+
+  const totalPrice = courseItems.reduce(
+    (total, item) => total + Number(item.price),
+    0
+  );
+
+  return totalPrice / courseItems.length;
+};
+
+const starterAverage = calculateCourseAverage('Starter');
+const mainCourseAverage = calculateCourseAverage('Main Course');
+const dessertAverage = calculateCourseAverage('Dessert');
+
   const handleSave = () => {
   if (!dishName.trim()) {
     setErrorMessage('Please enter a dish name.');
@@ -107,6 +156,56 @@ export default function App() {
           <Text style={styles.addButtonText}>+ Add Menu Item</Text>
         </TouchableOpacity>
 
+          {/* MENU STATISTICS */}
+        <Text style={styles.sectionTitle}>Menu Statistics</Text>
+
+        <View style={styles.statisticsCard}>
+          <Text style={styles.statisticLabel}>
+            Total Menu Items
+          </Text>
+
+          <Text style={styles.statisticValue}>
+            {totalItems}
+          </Text>
+        </View>
+
+        <View style={styles.statisticsCard}>
+  <Text style={styles.statisticLabel}>
+    Overall Average Price
+  </Text>
+
+  <Text style={styles.statisticValue}>
+    R{averagePrice.toFixed(2)}
+  </Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>
+          Average Price by Course
+        </Text>
+
+        <View style={styles.statisticsCard}>
+          <Text style={styles.statisticLabel}>Starters ({starterCount})</Text>
+          <Text style={styles.statisticValue}>
+            R{starterAverage.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.statisticsCard}>
+          <Text style={styles.statisticLabel}>
+            Main Courses ({mainCourseCount})
+          </Text>
+          <Text style={styles.statisticValue}>
+            R{mainCourseAverage.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.statisticsCard}>
+          <Text style={styles.statisticLabel}>Desserts ({dessertCount})</Text>
+          <Text style={styles.statisticValue}>
+            R{dessertAverage.toFixed(2)}
+          </Text>
+        </View>
+
         <Text style={styles.sectionTitle}>Current Menu</Text>
 
         <View style={styles.menuCard}>
@@ -146,33 +245,6 @@ export default function App() {
         </View>
       </ScrollView>
 
-        <Text style={styles.addedSectionTitle}>Added Menu Items</Text>
-
-{menuItems.length === 0 ? (
-  <Text style={styles.emptyMessage}>
-    No new menu items have been added yet.
-  </Text>
-) : (
-  menuItems.map((item) => (
-    <View style={styles.menuCard} key={item.id}>
-      <View>
-        <Text style={styles.dishName}>{item.dishName}</Text>
-
-        <Text style={styles.description}>
-          {item.description}
-        </Text>
-
-        <Text style={styles.course}>
-          {item.course.toUpperCase()}
-        </Text>
-      </View>
-
-      <Text style={styles.price}>
-        R{item.price}
-      </Text>
-    </View>
-  ))
-)}
 
       </>
     ) : screen === 'add' ? (
@@ -357,6 +429,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 28,
     marginBottom: 15,
+  },
+
+  statisticsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5D8CC',
+    padding: 16,
+    marginBottom: 12,
+  },
+
+  statisticLabel: {
+    color: '#6B6B6B',
+    fontSize: 14,
+  },
+
+  statisticValue: {
+    color: '#7A263A',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: 6,
   },
 
   menuCard: {
