@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import {Picker} from '@react-native-picker/picker'; //To use the Picker component for selecting the course type
 
 type MenuItem = {
@@ -46,18 +46,10 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
   const [lastAddedItem, setLastAddedItem] = useState<MenuItem | null>(null);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   // Calculates the total number of menu items.
 const totalItems = menuItems.length;
-
-// Calculates the overall average price.
-const averagePrice =
-  totalItems === 0
-    ? 0
-    : menuItems.reduce(
-        (total, item) => total + Number(item.price),
-        0
-      ) / totalItems;
 
 // Counts the number of starters.
 const starterCount = menuItems.filter(
@@ -96,280 +88,228 @@ const starterAverage = calculateCourseAverage('Starter');
 const mainCourseAverage = calculateCourseAverage('Main Course');
 const dessertAverage = calculateCourseAverage('Dessert');
 
-  const handleSave = () => {
-  if (!dishName.trim()) {
-    setErrorMessage('Please enter a dish name.');
-    return;
-  }
+  const averagePrice =
+    menuItems.length === 0
+      ? 0
+      : menuItems.reduce((total, item) => total + Number(item.price), 0) /
+        menuItems.length;
 
-  if (!description.trim()) {
-    setErrorMessage('Please enter a description.');
-    return;
-  }
+    // This will open the form and fill it with the selected menu item's details.
+  const handleEditItem = (item: MenuItem) => {
+    setDishName(item.dishName);
+    setDescription(item.description);
+    setCourse(item.course);
+    setPrice(item.price);
 
-  if (!course) {
-    setErrorMessage('Please select a course.');
-    return;
-  }
-
-  if (!price.trim()) {
-    setErrorMessage('Please enter a price.');
-    return;
-  }
-
-  const newItem: MenuItem = {
-    id: Date.now().toString(),
-    dishName: dishName.trim(),
-    description: description.trim(),
-    course: course,
-    price: price.trim(),
+    setEditingItemId(item.id);
+    setErrorMessage('');
+    setScreen('add');
   };
 
-  setMenuItems(currentItems => [...currentItems, newItem]);
-  setLastAddedItem(newItem);
-  setErrorMessage('');
-  setScreen('success');
-};
+  const handleSave = () => {
+    if (!dishName.trim()) {
+      setErrorMessage('Please enter a dish name.');
+      return;
+    }
+
+    if (!description.trim()) {
+      setErrorMessage('Please enter a description.');
+      return;
+    }
+
+    if (!course) {
+      setErrorMessage('Please select a course.');
+      return;
+    }
+
+    if (!price.trim()) {
+      setErrorMessage('Please enter a price.');
+      return;
+    }
+
+    if (Number.isNaN(Number(price))) {
+      setErrorMessage('Please enter a valid price.');
+      return;
+    }
+
+    const newItem: MenuItem = {
+      id: Date.now().toString(),
+      dishName: dishName.trim(),
+      description: description.trim(),
+      course: course,
+      price: price.trim(),
+    };
+
+    setMenuItems((currentItems) => [...currentItems, newItem]);
+    setLastAddedItem(newItem);
+    setErrorMessage('');
+    setScreen('success');
+  };
 
   return (
-  <View style={styles.container}>
-
+    <View style={styles.container}>
       {screen === 'menu' ? (
-
-        /* ================= MENU SCREEN ================= */
-
-      <>
-        <View style={styles.header}>
-          <Text style={styles.title}>Restaurant Menu</Text>
-          <Text style={styles.subtitle}>Manage your menu items</Text>
-        </View>
+        <>
+          <View style={styles.header}>
+            <Text style={styles.title}>Restaurant Menu</Text>
+            <Text style={styles.subtitle}>Manage your menu items</Text>
+          </View>
 
           <ScrollView
             style={styles.content}
             contentContainerStyle={styles.menuContent}
           >
-          
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setScreen('add')}
->
-          <Text style={styles.addButtonText}>+ Add Menu Item</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setScreen('add')}
+            >
+              <Text style={styles.addButtonText}>+ Add Menu Item</Text>
+            </TouchableOpacity>
 
-          {/* MENU STATISTICS */}
-        <Text style={styles.sectionTitle}>Menu Statistics</Text>
+            <Text style={styles.sectionTitle}>Menu Statistics</Text>
 
-        <View style={styles.statisticsCard}>
-          <Text style={styles.statisticLabel}>
-            Total Menu Items
-          </Text>
+            <View style={styles.statisticsCard}>
+              <Text style={styles.statisticLabel}>Total Menu Items</Text>
+              <Text style={styles.statisticValue}>{totalItems}</Text>
+            </View>
 
-          <Text style={styles.statisticValue}>
-            {totalItems}
-          </Text>
-        </View>
+            <View style={styles.statisticsCard}>
+              <Text style={styles.statisticLabel}>Average Price</Text>
+              <Text style={styles.statisticValue}>R{averagePrice.toFixed(2)}</Text>
+            </View>
 
-        <View style={styles.statisticsCard}>
-  <Text style={styles.statisticLabel}>
-    Overall Average Price
-  </Text>
+            <Text style={styles.sectionTitle}>Average Price by Course</Text>
 
-  <Text style={styles.statisticValue}>
-    R{averagePrice.toFixed(2)}
-  </Text>
-        </View>
+            <View style={styles.statisticsCard}>
+              <Text style={styles.statisticLabel}>Starters ({starterCount})</Text>
+              <Text style={styles.statisticValue}>R{starterAverage.toFixed(2)}</Text>
+            </View>
 
-        <Text style={styles.sectionTitle}>
-          Average Price by Course
-        </Text>
+            <View style={styles.statisticsCard}>
+              <Text style={styles.statisticLabel}>Main Courses ({mainCourseCount})</Text>
+              <Text style={styles.statisticValue}>R{mainCourseAverage.toFixed(2)}</Text>
+            </View>
 
-        <View style={styles.statisticsCard}>
-          <Text style={styles.statisticLabel}>Starters ({starterCount})</Text>
-          <Text style={styles.statisticValue}>
-            R{starterAverage.toFixed(2)}
-          </Text>
-        </View>
+            <View style={styles.statisticsCard}>
+              <Text style={styles.statisticLabel}>Desserts ({dessertCount})</Text>
+              <Text style={styles.statisticValue}>R{dessertAverage.toFixed(2)}</Text>
+            </View>
 
-        <View style={styles.statisticsCard}>
-          <Text style={styles.statisticLabel}>
-            Main Courses ({mainCourseCount})
-          </Text>
-          <Text style={styles.statisticValue}>
-            R{mainCourseAverage.toFixed(2)}
-          </Text>
-        </View>
+            <Text style={styles.sectionTitle}>Current Menu</Text>
 
-        <View style={styles.statisticsCard}>
-          <Text style={styles.statisticLabel}>Desserts ({dessertCount})</Text>
-          <Text style={styles.statisticValue}>
-            R{dessertAverage.toFixed(2)}
-          </Text>
-        </View>
+            {menuItems.length === 0 ? (
+              <Text style={styles.emptyMessage}>
+                No menu items are currently available.
+              </Text>
+            ) : (
+              menuItems.map((item) => (
+                <View style={styles.menuCard} key={item.id}>
+                  <View>
+                    <Text style={styles.dishName}>{item.dishName}</Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <Text style={styles.course}>{item.course.toUpperCase()}</Text>
+                  </View>
 
-        <Text style={styles.sectionTitle}>Current Menu</Text>
+                  <Text style={styles.price}>R{Number(item.price).toFixed(2)}</Text>
+                </View>
+              ))
+            )}
+          </ScrollView>
+        </>
+      ) : screen === 'add' ? (
+        <View style={styles.content}>
+          <Text style={styles.formTitle}>Add Menu Item</Text>
 
-        <View style={styles.menuCard}>
-          <View>
-            <Text style={styles.dishName}>Smoked Chicken Pasta</Text>
-            <Text style={styles.description}>
-              Grilled smoked chicken with Penne pasta, cooked in a creamy sauce with basil
-            </Text>
-            <Text style={styles.course}>MAIN COURSE</Text>
+          {errorMessage !== '' && (
+            <Text style={styles.errorMessage}>{errorMessage}</Text>
+          )}
+
+          <Text style={styles.label}>Dish Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter dish name"
+            placeholderTextColor="#6B6B6B"
+            value={dishName}
+            onChangeText={setDishName}
+          />
+
+          <Text style={styles.label}>Description</Text>
+          <TextInput
+            style={styles.descriptionInput}
+            placeholder="Enter description"
+            placeholderTextColor="#6B6B6B"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+          />
+
+          <Text style={styles.label}>Course</Text>
+          <View style={styles.input}>
+            <Picker
+              selectedValue={course}
+              onValueChange={(itemValue) => {
+                setCourse(itemValue);
+                setErrorMessage('');
+              }}
+            >
+              <Picker.Item label="Select course" value="" />
+              <Picker.Item label="Starter" value="Starter" />
+              <Picker.Item label="Main Course" value="Main Course" />
+              <Picker.Item label="Dessert" value="Dessert" />
+            </Picker>
           </View>
 
-          <Text style={styles.price}>R150.00</Text>
+          <Text style={styles.label}>Price</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter price"
+            placeholderTextColor="#6B6B6B"
+            value={price}
+            onChangeText={setPrice}
+            keyboardType="decimal-pad"
+          />
+
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => setScreen('menu')}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
+      ) : (
+        <View style={styles.content}>
+          <Text style={styles.successTitle}>✓</Text>
 
-        <View style={styles.menuCard}>
-          <View>
-            <Text style={styles.dishName}>Classic Garden Salad</Text>
-            <Text style={styles.description}>
-              Mixed greens with tomatoes, cucumbers, carrots, red onions, and croutons
-            </Text>
-            <Text style={styles.course}>STARTER</Text>
-          </View>
+          <Text style={styles.successHeading}>Menu Item Added!</Text>
 
-          <Text style={styles.price}>R70.00</Text>
+          <Text style={styles.successMessage}>Menu item added successfully!</Text>
+
+          {lastAddedItem && (
+            <View style={styles.menuCard}>
+              <View>
+                <Text style={styles.dishName}>{lastAddedItem.dishName}</Text>
+                <Text style={styles.description}>{lastAddedItem.description}</Text>
+                <Text style={styles.course}>{lastAddedItem.course.toUpperCase()}</Text>
+              </View>
+
+              <Text style={styles.price}>R{lastAddedItem.price}</Text>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={() => setScreen('menu')}
+          >
+            <Text style={styles.saveButtonText}>Back to Menu</Text>
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.menuCard}>
-          <View>
-            <Text style={styles.dishName}>Chocolate Cake</Text>
-            <Text style={styles.description}>
-              A rich slice of a moist chocolate cake, drizzled with chocolcate ganache
-            </Text>
-            <Text style={styles.course}>DESSERT</Text>
-          </View>
-
-          <Text style={styles.price}>R55.00</Text>
-        </View>
-      </ScrollView>
-
-
-      </>
-    ) : screen === 'add' ? (
-
-      /* ================= ADD MENU SCREEN ================= */
-
-      <View style={styles.content}>
-
-        <Text style={styles.formTitle}>Add Menu Item</Text>
-
-        {errorMessage !== '' && (
-        <Text style={styles.errorMessage}>{errorMessage}</Text>
-        )}
-
-        <Text style={styles.label}>Dish Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter dish name"
-          placeholderTextColor="#6B6B6B"
-          value={dishName}
-          onChangeText={setDishName}
-        />
-
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={styles.descriptionInput}
-          placeholder="Enter description"
-          placeholderTextColor="#6B6B6B"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
-
-        <Text style={styles.label}>Course</Text>
-        <View style={styles.input}>
-          <Picker
-            selectedValue={course}
-            onValueChange={(itemValue) => {
-              setCourse(itemValue);
-              setErrorMessage('');
-          }}
-      >
-            <Picker.Item label="Select course" value="" />
-            <Picker.Item label="Starter" value="Starter" />
-            <Picker.Item label="Main Course" value="Main Course" />
-            <Picker.Item label="Dessert" value="Dessert" />
-          </Picker>
-        </View>
-
-        <Text style={styles.label}>Price</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter price"
-          placeholderTextColor="#6B6B6B"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="decimal-pad"
-        />  
-
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleSave}
-        >
-
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => setScreen('menu')}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-
-      </View>
-    ) : (
-
-      /* ================= SUCCESS SCREEN ================= */
-
-  <View style={styles.content}>
-    <Text style={styles.successTitle}>✓</Text>
-
-    <Text style={styles.successHeading}>
-      Menu Item Added!
-    </Text>
-
-    <Text style={styles.successMessage}>
-      Menu item added successfully!
-    </Text>
-
-    {lastAddedItem && (
-      <View style={styles.menuCard}>
-        <View>
-          <Text style={styles.dishName}>
-            {lastAddedItem.dishName}
-          </Text>
-
-          <Text style={styles.description}>
-            {lastAddedItem.description}
-          </Text>
-
-          <Text style={styles.course}>
-            {lastAddedItem.course.toUpperCase()}
-          </Text>
-        </View>
-
-        <Text style={styles.price}>
-          R{lastAddedItem.price}
-        </Text>
-      </View>
-    )}
-
-    <TouchableOpacity
-      style={styles.saveButton}
-      onPress={() => setScreen('menu')}
-    >
-      <Text style={styles.saveButtonText}>
-        Back to Menu
-      </Text>
-    </TouchableOpacity>
-  </View>
-)}
-
-  </View>
-);
+      )}
+    </View>
+  );
 }
 
 /* =====================================================
