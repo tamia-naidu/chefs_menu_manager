@@ -106,6 +106,29 @@ const dessertAverage = calculateCourseAverage('Dessert');
     setScreen('add');
   };
 
+  // Deletes a menu item after the user confirms.
+  const handleDeleteItem = (itemId: string) => {
+    Alert.alert(
+      'Delete Menu Item',
+      'Are you sure you want to delete this menu item?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setMenuItems(currentItems =>
+              currentItems.filter(item => item.id !== itemId)
+            );
+          },
+        },
+      ]
+    );
+  };
+
   const handleSave = () => {
     if (!dishName.trim()) {
       setErrorMessage('Please enter a dish name.');
