@@ -156,15 +156,25 @@ const dessertAverage = calculateCourseAverage('Dessert');
     }
 
     const newItem: MenuItem = {
-      id: Date.now().toString(),
-      dishName: dishName.trim(),
-      description: description.trim(),
-      course: course,
-      price: price.trim(),
-    };
+  id: editingItemId ?? Date.now().toString(),
+  dishName: dishName.trim(),
+  description: description.trim(),
+  course: course,
+  price: price.trim(),
+};
 
-    setMenuItems((currentItems) => [...currentItems, newItem]);
+    if (editingItemId !== null) {
+      setMenuItems(currentItems =>
+        currentItems.map(item =>
+          item.id === editingItemId ? newItem : item
+        )
+      );
+    } else {
+      setMenuItems(currentItems => [...currentItems, newItem]);
+    }
+
     setLastAddedItem(newItem);
+    setEditingItemId(null);
     setErrorMessage('');
     setScreen('success');
   };
