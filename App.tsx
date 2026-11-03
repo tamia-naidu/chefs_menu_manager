@@ -48,6 +48,9 @@ export default function App() {
   const [lastAddedItem, setLastAddedItem] = useState<MenuItem | null>(null);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
+  // Keeps track of whether the last action was an edit.
+const [wasEditing, setWasEditing] = useState(false);
+
   // Stores the text entered into the search field.
 const [searchText, setSearchText] = useState('');
 
@@ -162,8 +165,8 @@ const filteredMenuItems = menuItems.filter(item => {
       return;
     }
 
-    if (Number.isNaN(Number(price))) {
-      setErrorMessage('Please enter a valid price.');
+    if (!Number.isFinite(Number(price)) || Number(price) <= 0) {
+      setErrorMessage('Please enter a valid price greater than zero.');
       return;
     }
 
@@ -186,6 +189,10 @@ const filteredMenuItems = menuItems.filter(item => {
     }
 
     setLastAddedItem(newItem);
+
+    // Remember whether the user added or edited an item.
+    setWasEditing(editingItemId !== null);
+
     setEditingItemId(null);
     setErrorMessage('');
     setScreen('success');
@@ -398,9 +405,15 @@ const filteredMenuItems = menuItems.filter(item => {
         <View style={styles.content}>
           <Text style={styles.successTitle}>✓</Text>
 
-          <Text style={styles.successHeading}>Menu Item Added!</Text>
+          <Text style={styles.successHeading}>
+            {wasEditing ? 'Menu Item Updated!' : 'Menu Item Added!'}
+          </Text>
 
-          <Text style={styles.successMessage}>Menu item added successfully!</Text>
+          <Text style={styles.successMessage}>
+            {wasEditing
+              ? 'Menu item updated successfully!'
+              : 'Menu item added successfully!'}
+          </Text>
 
           {lastAddedItem && (
             <View style={styles.menuCard}>
