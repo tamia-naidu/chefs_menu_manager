@@ -48,6 +48,12 @@ export default function App() {
   const [lastAddedItem, setLastAddedItem] = useState<MenuItem | null>(null);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
+  // Stores the text entered into the search field.
+const [searchText, setSearchText] = useState('');
+
+// Stores the selected course filter.
+const [courseFilter, setCourseFilter] = useState('All');
+
   // Calculates the total number of menu items.
 const totalItems = menuItems.length;
 
@@ -88,11 +94,17 @@ const starterAverage = calculateCourseAverage('Starter');
 const mainCourseAverage = calculateCourseAverage('Main Course');
 const dessertAverage = calculateCourseAverage('Dessert');
 
-  const averagePrice =
-    menuItems.length === 0
-      ? 0
-      : menuItems.reduce((total, item) => total + Number(item.price), 0) /
-        menuItems.length;
+// Filters menu items according to the search text and selected course.
+const filteredMenuItems = menuItems.filter(item => {
+  const matchesSearch = item.dishName
+    .toLowerCase()
+    .includes(searchText.toLowerCase());
+
+  const matchesCourse =
+    courseFilter === 'All' || item.course === courseFilter;
+
+  return matchesSearch && matchesCourse;
+});
 
     // This will open the form and fill it with the selected menu item's details.
   const handleEditItem = (item: MenuItem) => {
@@ -194,7 +206,22 @@ const dessertAverage = calculateCourseAverage('Dessert');
           >
             <TouchableOpacity
               style={styles.addButton}
-              onPress={() => setScreen('add')}
+              onPress={() => {
+                // Clears the form fields.
+                setDishName('');
+                setDescription('');
+                setCourse('');
+                setPrice('');
+
+                // Reset the editing state.
+                setEditingItemId(null);
+
+                // Clear any previous error message.
+                setErrorMessage('');
+
+                // Open the Add Menu Item screen.
+                setScreen('add');
+              }}
             >
               <Text style={styles.addButtonText}>+ Add Menu Item</Text>
             </TouchableOpacity>
@@ -204,11 +231,6 @@ const dessertAverage = calculateCourseAverage('Dessert');
             <View style={styles.statisticsCard}>
               <Text style={styles.statisticLabel}>Total Menu Items</Text>
               <Text style={styles.statisticValue}>{totalItems}</Text>
-            </View>
-
-            <View style={styles.statisticsCard}>
-              <Text style={styles.statisticLabel}>Average Price</Text>
-              <Text style={styles.statisticValue}>R{averagePrice.toFixed(2)}</Text>
             </View>
 
             <Text style={styles.sectionTitle}>Average Price by Course</Text>
@@ -227,31 +249,88 @@ const dessertAverage = calculateCourseAverage('Dessert');
               <Text style={styles.statisticLabel}>Desserts ({dessertCount})</Text>
               <Text style={styles.statisticValue}>R{dessertAverage.toFixed(2)}</Text>
             </View>
+              
+          {/* SEARCH MENU ITEMS */}
+          <Text style={styles.sectionTitle}>Search Menu</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Search by dish name..."
+            placeholderTextColor="#6B6B6B"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+
+          {/* FILTER MENU BY COURSE */}
+          <Text style={styles.label}>Filter by Course</Text>
+
+          <View style={styles.input}>
+            <Picker
+              selectedValue={courseFilter}
+              onValueChange={(itemValue) => setCourseFilter(itemValue)}
+            >
+              <Picker.Item label="All Courses" value="All" />
+              <Picker.Item label="Starter" value="Starter" />
+              <Picker.Item label="Main Course" value="Main Course" />
+              <Picker.Item label="Dessert" value="Dessert" />
+            </Picker>
+          </View>
+
+          {/* CLEAR SEARCH AND FILTER */}
+          <TouchableOpacity
+            style={styles.clearButton}
+            onPress={() => {
+              setSearchText('');
+              setCourseFilter('All');
+            }}
+          >
+            <Text style={styles.clearButtonText}>Clear Filters</Text>
+          </TouchableOpacity>
 
             <Text style={styles.sectionTitle}>Current Menu</Text>
 
-            {menuItems.length === 0 ? (
-              <Text style={styles.emptyMessage}>
-                No menu items are currently available.
-              </Text>
-            ) : (
-              menuItems.map((item) => (
-                <View style={styles.menuCard} key={item.id}>
-                  <View>
-                    <Text style={styles.dishName}>{item.dishName}</Text>
-                    <Text style={styles.description}>{item.description}</Text>
-                    <Text style={styles.course}>{item.course.toUpperCase()}</Text>
-                  </View>
-
-                  <Text style={styles.price}>R{Number(item.price).toFixed(2)}</Text>
+          {filteredMenuItems.length === 0 ? (
+            <Text style={styles.emptyMessage}>
+              No matching menu items found.
+            </Text>
+          ) : (
+            filteredMenuItems.map((item) => (
+              <View style={styles.menuCard} key={item.id}>
+                <View>
+                  <Text style={styles.dishName}>{item.dishName}</Text>
+                  <Text style={styles.description}>{item.description}</Text>
+                  <Text style={styles.course}>{item.course.toUpperCase()}</Text>
                 </View>
-              ))
-            )}
+
+                <Text style={styles.price}>
+                  R{Number(item.price).toFixed(2)}
+                </Text>
+
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => handleEditItem(item)}
+                  >
+                    <Text style={styles.actionButtonText}>Edit</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDeleteItem(item.id)}
+                  >
+                    <Text style={styles.actionButtonText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+          ))
+          )}
           </ScrollView>
         </>
       ) : screen === 'add' ? (
         <View style={styles.content}>
-          <Text style={styles.formTitle}>Add Menu Item</Text>
+          <Text style={styles.formTitle}>
+            {editingItemId !== null ? 'Edit Menu Item' : 'Add Menu Item'}
+          </Text>
 
           {errorMessage !== '' && (
             <Text style={styles.errorMessage}>{errorMessage}</Text>
@@ -303,7 +382,9 @@ const dessertAverage = calculateCourseAverage('Dessert');
           />
 
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save</Text>
+            <Text style={styles.saveButtonText}>
+              {editingItemId !== null ? 'Save Changes' : 'Save'}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -396,6 +477,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  clearButton: {
+    backgroundColor: '#E5D8CC',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+
+  clearButtonText: {
+    color: '#7A263A',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   sectionTitle: {
     color: '#2B2B2B',
     fontSize: 18,
@@ -461,6 +555,32 @@ const styles = StyleSheet.create({
     color: '#C96A4A',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+
+  actionButtons: {
+    justifyContent: 'center',
+    gap: 8,
+    marginLeft: 10,
+  },
+
+  editButton: {
+    backgroundColor: '#7A263A',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+
+  deleteButton: {
+    backgroundColor: '#C96A4A',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
 
   formTitle: {
