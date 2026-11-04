@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, } from 'react-native';
 import {Picker} from '@react-native-picker/picker'; //To use the Picker component for selecting the course type
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type MenuItem = {
   id: string;
@@ -204,7 +205,7 @@ const filteredMenuItems = menuItems.filter(item => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {screen === 'menu' ? (
         <>
           <View style={styles.header}>
@@ -458,7 +459,7 @@ const filteredMenuItems = menuItems.filter(item => {
           </TouchableOpacity>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -557,25 +558,24 @@ const styles = StyleSheet.create({
 
   menuCard: {
     backgroundColor: '#FFFFFF',
-    minHeight: 100,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E5D8CC',
     padding: 16,
     marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
 
   menuCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    width: '100%',
   },
 
   menuCardDetails: {
     flex: 1,
-    paddingRight: 10,
+    minWidth: 0,
+    paddingRight: 8,
   },
 
   dishName: {
@@ -588,7 +588,6 @@ const styles = StyleSheet.create({
     color: '#6B6B6B',
     fontSize: 12,
     marginTop: 5,
-    maxWidth: 220,
   },
 
   course: {
@@ -602,27 +601,28 @@ const styles = StyleSheet.create({
     color: '#C96A4A',
     fontSize: 16,
     fontWeight: 'bold',
+    flexShrink: 0,
   },
 
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 10,
-    marginTop: 15,
+    gap: 8,
+    marginTop: 14,
   },
 
   editButton: {
     backgroundColor: '#7A263A',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 16,
+    borderRadius: 7,
   },
 
   deleteButton: {
     backgroundColor: '#C96A4A',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 16,
+    borderRadius: 7,
   },
 
   actionButtonText: {
@@ -639,12 +639,12 @@ const styles = StyleSheet.create({
   },
 
   label: {
-  color: '#2B2B2B',
-  fontSize: 14,
-  fontWeight: '600',
-  marginBottom: 8,
-  marginTop: 12,
-},
+    color: '#2B2B2B',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 12,
+  },
 
   input: {
     backgroundColor: '#FFFFFF',
