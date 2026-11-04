@@ -170,13 +170,18 @@ const filteredMenuItems = menuItems.filter(item => {
       return;
     }
 
+    if (!/^\d+(\.\d{1,2})?$/.test(price.trim())) {
+      setErrorMessage('Please enter a price with no more than two decimal places.');
+      return;
+    }
+ 
     const newItem: MenuItem = {
-  id: editingItemId ?? Date.now().toString(),
-  dishName: dishName.trim(),
-  description: description.trim(),
-  course: course,
-  price: price.trim(),
-};
+      id: editingItemId ?? Date.now().toString(),
+      dishName: dishName.trim(),
+      description: description.trim(),
+      course: course,
+      price: price.trim(),
+    };
 
     if (editingItemId !== null) {
       setMenuItems(currentItems =>
@@ -303,32 +308,42 @@ const filteredMenuItems = menuItems.filter(item => {
           ) : (
             filteredMenuItems.map((item) => (
               <View style={styles.menuCard} key={item.id}>
-                <View>
-                  <Text style={styles.dishName}>{item.dishName}</Text>
-                  <Text style={styles.description}>{item.description}</Text>
-                  <Text style={styles.course}>{item.course.toUpperCase()}</Text>
+                {/* Dish information and price */}
+                <View style={styles.menuCardHeader}>
+                  <View style={styles.menuCardDetails}>
+                    <Text style={styles.dishName}>{item.dishName}</Text>
+
+                    <Text style={styles.description}>
+                      {item.description}
+                    </Text>
+
+                    <Text style={styles.course}>
+                      {item.course.toUpperCase()}
+                    </Text>
+                  </View>
+
+                  <Text style={styles.price}>
+                    R{Number(item.price).toFixed(2)}
+                  </Text>
                 </View>
 
-                <Text style={styles.price}>
-                  R{Number(item.price).toFixed(2)}
-                </Text>
-
+                {/* Edit and Delete buttons */}
                 <View style={styles.actionButtons}>
                   <TouchableOpacity
                     style={styles.editButton}
                     onPress={() => handleEditItem(item)}
                   >
-                    <Text style={styles.actionButtonText}>Edit</Text>
-                  </TouchableOpacity>
+                  <Text style={styles.actionButtonText}>Edit</Text>
+                </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.deleteButton}
                     onPress={() => handleDeleteItem(item.id)}
                   >
                     <Text style={styles.actionButtonText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
               </View>
+            </View>
           ))
           )}
           </ScrollView>
@@ -396,7 +411,15 @@ const filteredMenuItems = menuItems.filter(item => {
 
           <TouchableOpacity
             style={styles.cancelButton}
-            onPress={() => setScreen('menu')}
+            onPress={() => {
+              setDishName('');
+              setDescription('');
+              setCourse('');
+              setPrice('');
+              setEditingItemId(null);
+              setErrorMessage('');
+              setScreen('menu');
+            }}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
@@ -544,6 +567,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
+  menuCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+
+  menuCardDetails: {
+    flex: 1,
+    paddingRight: 10,
+  },
+
   dishName: {
     color: '#2B2B2B',
     fontSize: 17,
@@ -571,9 +605,10 @@ const styles = StyleSheet.create({
   },
 
   actionButtons: {
-    justifyContent: 'center',
-    gap: 8,
-    marginLeft: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 15,
   },
 
   editButton: {
@@ -629,11 +664,6 @@ const styles = StyleSheet.create({
     borderColor: '#E5D8CC',
     paddingHorizontal: 15,
     paddingTop: 15,
-},
-
-  placeholder: {
-    color: '#6B6B6B',
-    fontSize: 14,
 },
 
   saveButton: {
@@ -702,14 +732,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 20,
-},
-
-  addedSectionTitle: {
-    color: '#2B2B2B',
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 18,
-    marginBottom: 15,
 },
 
 });
